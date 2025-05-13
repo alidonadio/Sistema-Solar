@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sistema Solar</title>
+  <style>
+    body {
+      background: radial-gradient(ellipse at center, #000 0%, #111 100%);
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .object {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    .p-orbit, #m-orbit {
+      border: 0.1vmin solid lightgrey;
+      opacity: 0.5;
+      background: transparent;
+    }
+
+    #belt-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      height: 62vmin;
+      width: 62vmin;
+      pointer-events: none;
+    }
+
+    #belt {
+      height: 1.2vmin;
+      width: 1.2vmin;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #m-orbit {
+      height: 6vmin;
+      width: 6vmin;
+    }
+
+    .planet, #moon {
+      z-index: 100;
+    }
+
+    #sun { height: 5vmin; width: 5vmin; }
+    #moon { height: 0.5vmin; width: 0.5vmin; background-color: white; }
+    #mercury { height: 1vmin; width: 1vmin; }
+    #venus { height: 1.5vmin; width: 1.5vmin; }
+    #earth { height: 2vmin; width: 2vmin; }
+    #mars { height: 1.7vmin; width: 1.7vmin; }
+    #jupiter { height: 3vmin; width: 3vmin; }
+    #saturn {
+      height: 3vmin;
+      width: 3vmin;
+      border-radius: 0%;
+      position: relative;
+    }
+
+    #saturn::after {
+      content: '';
+      position: absolute;
+      width: 6vmin;
+      height: 1vmin;
+      border: 0.2vmin solid rgba(255, 255, 153, 0.5);
+      border-radius: 50%;
+      left: -1.5vmin;
+      top: 1vmin;
+      transform: rotate(30deg);
+    }
+
+    #uranus { height: 2vmin; width: 2vmin; }
+    #neptune { height: 2vmin; width: 2vmin; }
+
+    @keyframes rotateSelf {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .planet {
+      animation: rotateSelf 10s linear infinite;
+    }
+
+    .label {
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 0.8vmin;
+      white-space: nowrap;
+    }
+
+    .planet-wrapper {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+</head>
+<body>
+  <img class="object" src="img/sun.png" alt="Sol" id="sun">
+
+  <div class="planet-wrapper" id="mercury-wrap">
+    <img class="object planet" src="img/mercury.png" alt="Mercúrio" id="mercury">
+    <div class="label">Mercúrio</div>
+  </div>
+  <div class="planet-wrapper" id="venus-wrap">
+    <img class="object planet" src="img/venus.png" alt="Vênus" id="venus">
+    <div class="label">Vênus</div>
+  </div>
+  <div class="planet-wrapper" id="earth-wrap">
+    <img class="object planet" src="img/earth.png" alt="Terra" id="earth">
+    <div class="label">Terra</div>
+  </div>
+  <div class="planet-wrapper" id="mars-wrap">
+    <img class="object planet" src="img/mars.png" alt="Marte" id="mars">
+    <div class="label">Marte</div>
+  </div>
+  <div class="planet-wrapper" id="jupiter-wrap">
+    <img class="object planet" src="img/jupiter.png" alt="Júpiter" id="jupiter">
+    <div class="label">Júpiter</div>
+  </div>
+  <div class="planet-wrapper" id="saturn-wrap">
+    <img class="object planet" src="img/saturn.png" alt="Saturno" id="saturn">
+    <div class="label">Saturno</div>
+  </div>
+  <div class="planet-wrapper" id="uranus-wrap">
+    <img class="object planet" src="img/uranus.png" alt="Urano" id="uranus">
+    <div class="label">Urano</div>
+  </div>
+  <div class="planet-wrapper" id="neptune-wrap">
+    <img class="object planet" src="img/neptune.png" alt="Netuno" id="neptune">
+    <div class="label">Netuno</div>
+  </div>
+
+  <div class="object" id="moon"></div>
+
+  <!-- Orbitas dos planetas -->
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object p-orbit"></div>
+  <div class="object" id="m-orbit"></div>
+
+  <div id="belt-wrapper">
+    <img src="img/asteroid.png" class="object" alt="Cinturão de Asteroides" id="belt">
+  </div>
+
+  <script>
+    const planets = document.querySelectorAll('.planet');
+    const p_radii = [8, 12, 18, 24, 34, 42, 50, 56];
+    let p_radians = new Array(8).fill(0);
+    const p_velocities = [1.607, 1.174, 1, 0.802, 0.434, 0.323, 0.228, 0.182];
+
+    const moon = document.querySelector('#moon');
+    const m_radius = 3;
+    let m_radians = 0;
+    const m_velocity = 10;
+
+    const p_orbits = document.querySelectorAll('.p-orbit');
+    const m_orbit = document.querySelector('#m-orbit');
+
+    const belt = document.querySelector('#belt');
+    const belt_radius = 30;
+    let belt_angle = 0;
+    const belt_speed = 0.2;
+
+    p_orbits.forEach((p_orbit, index) => {
+      p_orbit.style.height = `${p_radii[index]}vmin`;
+      p_orbit.style.width = `${p_radii[index]}vmin`;
+    });
+
+    function animate() {
+      let earthPos = { x: 0, y: 0 };
+
+      planets.forEach((planet, index) => {
+        const x = Math.cos(p_radians[index]) * p_radii[index];
+        const y = Math.sin(p_radians[index]) * p_radii[index];
+        planet.parentElement.style.transform = `translate(calc(-50% + ${x}vmin), calc(-50% + ${y}vmin))`;
+
+        if (index === 2) earthPos = { x, y };
+
+        p_radians[index] += p_velocities[index] * 0.02;
+      });
+
+      moon.style.transform = `translate(calc(-50% + ${earthPos.x + Math.cos(m_radians) * m_radius}vmin), calc(-50% + ${earthPos.y + Math.sin(m_radians) * m_radius}vmin))`;
+      m_orbit.style.transform = `translate(calc(-50% + ${earthPos.x}vmin), calc(-50% + ${earthPos.y}vmin))`;
+
+      m_radians += m_velocity * 0.02;
+
+      const belt_x = Math.cos(belt_angle) * belt_radius;
+      const belt_y = Math.sin(belt_angle) * belt_radius;
+      belt.style.transform = `translate(calc(-50% + ${belt_x}vmin), calc(-50% + ${belt_y}vmin))`;
+      belt_angle += belt_speed * 0.02;
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  </script>
+</body>
+</html>
